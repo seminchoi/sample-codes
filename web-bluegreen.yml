@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aws9
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-blue
+  namespace: aws9
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-blue
+  template:
+    metadata:
+      labels:
+        app: web-blue
+    spec:
+      containers:
+        - name: web-blue
+          image: choicco89/mynginx:blue
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "250m"
+            limits:
+              memory: "64Mi"
+              cpu: "500m"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-green
+  namespace: aws9
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-green
+  template:
+    metadata:
+      labels:
+        app: web-green
+    spec:
+      containers:
+        - name: web-green
+          image: choicco89/mynginx:green
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "250m"
+            limits:
+              memory: "64Mi"
+              cpu: "500m"
+  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+  namespace: aws9
+spec:
+  type: LoadBalancer
+  selector: 
+    app: web-green
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+      # nodeport는 자동 할당
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: aws9-hpa
+  namespace: aws9
+spec:
+  scaleTargetRef: 
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-green
+  minReplicas: 3
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 30
