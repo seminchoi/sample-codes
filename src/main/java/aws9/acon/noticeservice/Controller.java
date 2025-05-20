@@ -3,6 +3,7 @@ package aws9.acon.noticeservice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,6 +15,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Controller {
     private final Repository repository;
     private AtomicInteger counter = new AtomicInteger(0);
+
+    // Health check
+    @GetMapping
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("healthy");
+    }
 
     @GetMapping("/notices")
     public List<Sample> getList() {
