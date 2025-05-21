@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+  build:
+    commands:
+      - echo Build started on `date`
+      - chmod +x ./gradlew
+      - ./gradlew build
+artifacts:
+  files:
+    - build/libs/notice-service-0.0.1-SNAPSHOT.jar
+  discard-paths: yes # 디렉토리 제외하고 파일만 업로드
+cache:
+  paths:
+    - '/root/.gradle/**/*' # S3 cache에 등록할 파일들

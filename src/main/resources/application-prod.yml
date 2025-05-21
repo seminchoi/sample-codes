@@ -1,13 +1,9 @@
-aws:
-  secretsmanager:
-    region: ap-northeast-2
-
 spring:
   config:
-    import: 'aws-secretsmanager:rds!db-cf7dfe1e-1d02-406f-980a-29d5f0f3a83c'
+    import: aws-secretsmanager:rds!db-cf7dfe1e-1d02-406f-980a-29d5f0f3a83c
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mariadb://notice-db.cdkk8ekkyyy8.ap-northeast-2.rds.amazonaws.com:3306/notice?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://notice-db.cdkk8ekkyyy8.ap-northeast-2.rds.amazonaws.com:3306/notice?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${username}
     password: ${password}
 
