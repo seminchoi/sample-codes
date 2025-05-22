@@ -1,3 +1,5 @@
 #!/bin/bash
 
-java -jar notice-service-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+sudo cp -f /home/ubuntu/app/reg.service /etc/systemd/system/notice.service
+sudo systemctl daemon-reload
+sudo systemctl start notice.service

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-lsof -ti:8080 | xargs kill
+sudo systemctl stop notice.service
