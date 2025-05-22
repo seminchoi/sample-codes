@@ -21,7 +21,7 @@ public class Controller {
     private Random random = new Random();
 
     // Health check
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("healthy");
     }
