@@ -42,5 +42,12 @@ variable "service_names" {
 variable "key_name" {
   description = "SSH key name"
   type        = string
-  default = "ec2mykey"
+  default = "manage"
+}
+
+#
+variable "codeconnection_arn" {
+  description   = "code connection arn"
+  type          = string
+  default       = "arn:aws:codeconnections:ap-northeast-2:886723286293:connection/3d47789b-36b6-46b1-8583-fcdda2e43687"
 }

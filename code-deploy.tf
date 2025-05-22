@@ -23,10 +23,11 @@ resource "aws_iam_role_policy_attachment" "codedeploy_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
-resource "aws_iam_role_policy_attachment" "codedeploy_policy_attachment_admin" {
-  role       = aws_iam_role.codedeploy_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
+# resource "aws_iam_role_policy_attachment" "codedeploy_policy_attachment_admin" {
+#   role       = aws_iam_role.codedeploy_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+# }
+
 # # CodeDeploy에서 Auto Scaling 그룹에 액세스할 수 있는 정책
 # resource "aws_iam_role_policy_attachment" "codedeploy_autoscaling_attachment" {
 #   role       = aws_iam_role.codedeploy_role.name

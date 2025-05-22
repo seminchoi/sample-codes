@@ -23,14 +23,14 @@ resource "aws_codepipeline" "service_pipeline" {
       output_artifacts = ["source_output"]
 
       configuration = {
-        ConnectionArn    = "arn:aws:codeconnections:ap-northeast-2:118500955862:connection/4321c421-937d-4115-ac26-827d09a4cd73"
+        ConnectionArn    = var.codeconnection_arn
         FullRepositoryId = "seminchoi/sample-codes"
         BranchName       = "aws-${var.service_names[count.index]}"
       }
     }
   }
 
-  # 🟡 Git Trigger 추가
+  # Git Trigger 추가
   trigger {
     provider_type = "CodeStarSourceConnection"
 
@@ -155,7 +155,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
       "codeconnections:UseConnection"
     ]
     resources = [
-      "arn:aws:codeconnections:ap-northeast-2:118500955862:connection/4321c421-937d-4115-ac26-827d09a4cd73"
+      var.codeconnection_arn
     ]
   }
 }

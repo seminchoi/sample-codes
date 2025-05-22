@@ -1,8 +1,7 @@
 # CICD 에서 빌드 된 애플리케이션 파일을 저장하거나 필요한 캐시 파일을 저장하는 버킷
 data "aws_s3_bucket" "cicd" {
-  bucket = "cicd-98bfce82-85b4-5404-09bd-2e44c49cdc72"
+  bucket = "ec2-cicd-bucket-20250522"
 }
-
 
 data "aws_iam_policy_document" "assume_role" {
   statement {
