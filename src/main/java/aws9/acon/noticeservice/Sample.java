@@ -1,20 +1,17 @@
 package aws9.acon.noticeservice;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import lombok.Builder;
 import lombok.Getter;
-import org.springframework.data.annotation.CreatedDate;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
+@Setter
+@Builder
 public class Sample {
-    @Id
     private Integer id;
     private String title;
     private String content;
-
-    @CreatedDate
     private LocalDateTime createdAt;
 }

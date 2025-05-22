@@ -4,17 +4,26 @@ phases:
   install:
     runtime-versions:
       java: corretto17
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_NAME=$REPOSITORY_URI/msa/notice:$IMAGE_TAG
+      - echo $IMAGE_NAME
   build:
     commands:
       - echo Build started on `date`
+      - echo Building the Docker image...
       - chmod +x ./gradlew
       - ./gradlew build
-artifacts:
-  files:
-    - build/libs/notice-service-0.0.1-SNAPSHOT.jar
-    - appspec.yml
-    - scripts/**/*
-  discard-paths: yes # 디렉토리 제외하고 파일만 업로드
-cache:
-  paths:
-    - '/root/.gradle/**/*' # S3 cache에 등록할 파일들
+      - docker build -t $IMAGE_NAME .
+  post_build:
+    commands:
+      - echo 'Pushing the Docker image...'
+      - docker push $IMAGE_NAME
+      - echo Writing image definitions...
+#      - kubectl set image deployment/notice my-app=123456789012.dkr.ecr.ap-northeast-2.amazonaws.com/my-app:<new-tag>
