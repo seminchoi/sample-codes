@@ -3,7 +3,7 @@ Description=Registration Service
 After=network.target
 
 [Service]
-User=ec2-user
+User=ubuntu
 ExecStart=/usr/bin/java -jar /home/ubuntu/app/reg-service-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 SuccessExitStatus=143
 Restart=always

@@ -9,10 +9,6 @@ hooks:
   ApplicationStop:
     - location: stop.sh
       runas: root
-  # 설치 후 배포되기 전
-  AfterInstall:
-    - location: reg-service.sh
-      runas: root
   # 배포 된 후
   ApplicationStart:
     - location: start.sh

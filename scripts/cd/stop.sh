@@ -1,3 +1,4 @@
 #!/bin/bash
 
-sudo systemctl stop notice.service
+sudo cp -f /home/ubuntu/app/reg.service /etc/systemd/system/reg.service
+sudo systemctl stop reg.service
