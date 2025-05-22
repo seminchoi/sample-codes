@@ -1,23 +1,6 @@
-spring:
-  config:
-    import: aws-secretsmanager:rds!db-cf7dfe1e-1d02-406f-980a-29d5f0f3a83c
-  datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://notice-db.cdkk8ekkyyy8.ap-northeast-2.rds.amazonaws.com:3306/notice?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${username}
-    password: ${password}
-
-  jpa:
-    database: mysql
-    open-in-view: false
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        show_sql: true
-        format_sql: true
-        use_sql_comments: true
-
+server:
+  servlet:
+    context-path: /notice
 
 services-url:
-  central: ""
+  central: "http://internal-center-internal-lb-1-104073528.ap-northeast-2.elb.amazonaws.com/center/"

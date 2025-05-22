@@ -2,12 +2,14 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/ec2-user/app
+    destination: /home/ubuntu/app
 
 hooks:
   # 배포가 되기 전 실행중인 인스턴스에 대해 실행
   ApplicationStop:
     - location: stop.sh
+      runas: root
   # 배포 된 후
   ApplicationStart:
     - location: start.sh
+      runas: root

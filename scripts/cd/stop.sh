@@ -1,3 +1,4 @@
 #!/bin/bash
 
-lsof -ti:8080 | xargs kill
+sudo cp -f /home/ubuntu/app/notice.service /etc/systemd/system/notice.service
+sudo systemctl stop notice.service
