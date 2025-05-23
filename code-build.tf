@@ -1,6 +1,6 @@
 # CICD 에서 빌드 된 애플리케이션 파일을 저장하거나 필요한 캐시 파일을 저장하는 버킷
 data "aws_s3_bucket" "cicd" {
-  bucket = "ec2-cicd-bucket-20250522"
+  bucket = var.s3_cicd
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -29,6 +29,11 @@ resource "aws_iam_role_policy_attachment" "aws_code_build_role_attach" {
 resource "aws_iam_role_policy_attachment" "secret_manager_attach" {
   role       = aws_iam_role.code_build_role.name
   policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+}
+
+resource "aws_iam_role_policy_attachment" "codebuild_admin_attach" {
+  role       = aws_iam_role.code_build_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 resource "aws_iam_role_policy" "s3_access_policy" {

@@ -49,7 +49,7 @@ variable "key_name" {
 variable "codeconnection_arn" {
   description   = "code connection arn"
   type          = string
-  default       = "arn:aws:codeconnections:ap-northeast-2:886723286293:connection/3d47789b-36b6-46b1-8583-fcdda2e43687"
+  default       = "arn:aws:codeconnections:ap-northeast-2:387721658341:connection/65722506-54ae-4787-95f2-5bd1bd1fab55"
 }
 
 variable "s3_cicd" {

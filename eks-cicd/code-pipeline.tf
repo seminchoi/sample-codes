@@ -1,8 +1,8 @@
 # 각 서비스별로 CodePipeline 생성
 resource "aws_codepipeline" "service_pipeline" {
   count    = length(var.service_names)
-  name     = "${var.service_names[count.index]}-pipeline"
-  role_arn = aws_iam_role.codepipeline_role.arn
+  name     = "eks-${var.service_names[count.index]}-pipeline"
+  role_arn = var.codepipeline_role_arn
 
   pipeline_type = "V2"
 
@@ -81,82 +81,3 @@ resource "aws_codepipeline" "service_pipeline" {
   #   }
   # }
 }
-
-# CodePipeline IAM 역할
-data "aws_iam_policy_document" "pipeline_assume_role" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["codepipeline.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "codepipeline_role" {
-  name               = "codepipeline-role"
-  assume_role_policy = data.aws_iam_policy_document.pipeline_assume_role.json
-}
-
-resource "aws_iam_role_policy_attachment" "codepipeline_policy_attachment" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-
-resource "aws_iam_role_policy" "codepipeline_policy" {
-  name   = "codepipeline-policy"
-  role   = aws_iam_role.codepipeline_role.id
-  policy = data.aws_iam_policy_document.codepipeline_policy.json
-}
-
-data "aws_iam_policy_document" "codepipeline_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:GetObject",
-      "s3:GetObjectVersion",
-      "s3:GetBucketVersioning",
-      "s3:PutObject"
-    ]
-    resources = [
-      data.aws_s3_bucket.cicd.arn,
-      "${data.aws_s3_bucket.cicd.arn}/*",
-    ]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "codebuild:BatchGetBuilds",
-      "codebuild:StartBuild"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "codedeploy:CreateDeployment",
-      "codedeploy:GetApplication",
-      "codedeploy:GetApplicationRevision",
-      "codedeploy:GetDeployment",
-      "codedeploy:GetDeploymentConfig",
-      "codedeploy:RegisterApplicationRevision"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "codeconnections:UseConnection"
-    ]
-    resources = [
-      var.codeconnection_arn
-    ]
-  }
-}
-

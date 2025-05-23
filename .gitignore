@@ -212,5 +212,7 @@ $RECYCLE.BIN/
 .idea
 .env
 .terraform
+build
+.gradle
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij,macos,windows,terraform

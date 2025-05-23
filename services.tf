@@ -43,7 +43,7 @@ resource "aws_lb_target_group" "internal_lb_target_groups" {
     timeout             = 5       # 헬스체크 타임아웃 (초)
     healthy_threshold   = 3       # 정상 판정 횟수
     unhealthy_threshold = 2       # 비정상 판정 횟수
-    path                = "/${var.service_names[count.index]}/"     # 헬스체크 요청 경로
+    path                = "/${var.service_names[count.index]}/healthz"     # 헬스체크 요청 경로
     matcher             = "200-299" # 정상 응답 범위
     protocol            = "HTTP"
   }
@@ -74,9 +74,29 @@ resource "aws_autoscaling_group" "service_asgs" {
     propagate_at_launch = true
   }
 
-  launch_template {
-    id      = aws_launch_template.server_lt.id
-    version = "$Latest"
+  mixed_instances_policy {
+    launch_template {
+      launch_template_specification {
+        launch_template_id = aws_launch_template.server_lt.id
+        version            = "$Latest"
+      }
+
+      # 여기에 overrides를 넣어서 다양한 인스턴스 타입 사용
+      overrides = [
+        {
+          instance_type = "t3.medium"
+        },
+        {
+          instance_type = "m5.large"
+        }
+      ]
+    }
+
+    instances_distribution {
+      on_demand_percentage_above_base_capacity = 50
+      spot_allocation_strategy                 = "lowest-price"
+      spot_instance_pools                      = 2
+    }
   }
 }
 
@@ -147,3 +167,20 @@ data "aws_iam_policy_document" "s3_artifact_access" {
   }
 }
 
+resource "aws_instance" "bastion" {
+  ami                         = "ami-05a7f3469a7653972"
+  instance_type               = "t3.micro"
+  subnet_id                   = aws_subnet.public_subnets[0].id
+  key_name                    = "mykey-h"
+  vpc_security_group_ids      = [aws_security_group.bastion_sg.id]
+  associate_public_ip_address = true
+
+  tags = {
+    Name = "bastion"
+  }
+
+  user_data = <<-EOF
+          #!/bin/bash
+          apt-get update
+          EOF
+}
