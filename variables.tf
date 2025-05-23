@@ -42,7 +42,7 @@ variable "service_names" {
 variable "key_name" {
   description = "SSH key name"
   type        = string
-  default = "manage"
+  default = "mykey-h"
 }
 
 #
@@ -50,4 +50,9 @@ variable "codeconnection_arn" {
   description   = "code connection arn"
   type          = string
   default       = "arn:aws:codeconnections:ap-northeast-2:886723286293:connection/3d47789b-36b6-46b1-8583-fcdda2e43687"
+}
+
+variable "s3_cicd" {
+  type = string
+  default = "cicd-20250523"
 }

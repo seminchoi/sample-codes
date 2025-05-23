@@ -37,6 +37,16 @@ resource "aws_lb_target_group" "internal_lb_target_groups" {
   port     = 8080
   protocol = "HTTP"
   vpc_id   = aws_vpc.msa_vpc.id
+
+  health_check {
+    interval            = 30      # 헬스체크 주기 (초)
+    timeout             = 5       # 헬스체크 타임아웃 (초)
+    healthy_threshold   = 3       # 정상 판정 횟수
+    unhealthy_threshold = 2       # 비정상 판정 횟수
+    path                = "/${var.service_names[count.index]}/"     # 헬스체크 요청 경로
+    matcher             = "200-299" # 정상 응답 범위
+    protocol            = "HTTP"
+  }
 }
 
 # 모든 서비스들에 대한 오토스케일링 그룹
@@ -44,17 +54,17 @@ resource "aws_autoscaling_group" "service_asgs" {
   count = length(var.service_names)
 
   name                      = "${var.service_names[count.index]}-asg"
-  max_size                  = 4
-  min_size                  = 2
-  health_check_grace_period = 300
+  max_size                  = 2
+  min_size                  = 1
+  health_check_grace_period = 30
   health_check_type         = "ELB"
-  desired_capacity          = 2
+  desired_capacity          = 1
   force_delete              = true
   vpc_zone_identifier       = [for subnet in aws_subnet.private_subnets: subnet.id]
   target_group_arns         = [aws_lb_target_group.internal_lb_target_groups[count.index].arn]
 
   instance_maintenance_policy {
-    min_healthy_percentage = 90
+    min_healthy_percentage = 80
     max_healthy_percentage = 120
   }
 
@@ -89,7 +99,7 @@ resource "aws_launch_template" "server_lt" {
     name = aws_iam_instance_profile.codedeploy_profile.name
   }
 
-  key_name = "ec2mykey"
+  key_name = var.key_name
 
   network_interfaces {
     associate_public_ip_address = false

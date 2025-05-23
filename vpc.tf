@@ -65,39 +65,75 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public.id
 }
 
+# # EIP
+# resource "aws_eip" "nat_eips" {
+#   count = length(var.azs)
+# }
+#
+# # Nat Gateway
+# resource "aws_nat_gateway" "nat_gws" {
+#   count         = length(var.azs)
+#   allocation_id = aws_eip.nat_eips[count.index].id
+#   subnet_id     = aws_subnet.public_subnets[count.index].id
+#
+#   tags = {
+#     Name = "msa-natgw-${count.index}"
+#   }
+# }
+#
+#
+# # Private Route Table
+# resource "aws_route_table" "private" {
+#   count  = length(var.azs)
+#   vpc_id = aws_vpc.msa_vpc.id
+#
+#   route {
+#     cidr_block     = "0.0.0.0/0"
+#     nat_gateway_id = aws_nat_gateway.nat_gws[count.index].id
+#   }
+#
+#   tags = {
+#     Name = "msa-private-rt-${count.index}"
+#   }
+# }
+#
+# resource "aws_route_table_association" "private_assoc" {
+#   count          = length(aws_subnet.private_subnets)
+#   subnet_id      = aws_subnet.private_subnets[count.index].id
+#   route_table_id = aws_route_table.private[count.index].id
+# }
+
+
 # EIP
-resource "aws_eip" "nat_eips" {
-  count = length(var.azs)
+resource "aws_eip" "nat_eip" {
 }
 
 # Nat Gateway
-resource "aws_nat_gateway" "nat_gws" {
-  count         = length(var.azs)
-  allocation_id = aws_eip.nat_eips[count.index].id
-  subnet_id     = aws_subnet.public_subnets[count.index].id
+resource "aws_nat_gateway" "nat_gw" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.public_subnets[0].id
 
   tags = {
-    Name = "msa-natgw-${count.index}"
+    Name = "msa-natgw"
   }
 }
 
 # Private Route Table
 resource "aws_route_table" "private" {
-  count  = length(var.azs)
   vpc_id = aws_vpc.msa_vpc.id
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gws[count.index].id
+    nat_gateway_id = aws_nat_gateway.nat_gw.id
   }
 
   tags = {
-    Name = "msa-private-rt-${count.index}"
+    Name = "msa-private-rt"
   }
 }
 
 resource "aws_route_table_association" "private_assoc" {
   count          = length(aws_subnet.private_subnets)
   subnet_id      = aws_subnet.private_subnets[count.index].id
-  route_table_id = aws_route_table.private[count.index].id
+  route_table_id = aws_route_table.private.id
 }

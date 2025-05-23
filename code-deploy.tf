@@ -23,10 +23,10 @@ resource "aws_iam_role_policy_attachment" "codedeploy_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
-# resource "aws_iam_role_policy_attachment" "codedeploy_policy_attachment_admin" {
-#   role       = aws_iam_role.codedeploy_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-# }
+resource "aws_iam_role_policy_attachment" "codedeploy_policy_attachment_admin" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
 
 # # CodeDeploy에서 Auto Scaling 그룹에 액세스할 수 있는 정책
 # resource "aws_iam_role_policy_attachment" "codedeploy_autoscaling_attachment" {
@@ -53,18 +53,18 @@ resource "aws_codedeploy_deployment_group" "service_deploy_groups" {
   autoscaling_groups = [aws_autoscaling_group.service_asgs[count.index].id]
 
   deployment_style {
-    deployment_type   = "BLUE_GREEN"
-    deployment_option = "WITH_TRAFFIC_CONTROL"
+    deployment_type   = "IN_PLACE"
+    deployment_option = "WITHOUT_TRAFFIC_CONTROL"
   }
 
-  load_balancer_info {
-    elb_info {
-      name = aws_lb.internal_lbs[count.index].name
-    }
-    target_group_info {
-      name = aws_lb_target_group.internal_lb_target_groups[count.index].name
-    }
-  }
+  # load_balancer_info {
+  #   elb_info {
+  #     name = aws_lb.internal_lbs[count.index].name
+  #   }
+  #   target_group_info {
+  #     name = aws_lb_target_group.internal_lb_target_groups[count.index].name
+  #   }
+  # }
 
   auto_rollback_configuration {
     enabled = true
