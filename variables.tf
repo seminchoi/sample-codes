@@ -42,17 +42,17 @@ variable "service_names" {
 variable "key_name" {
   description = "SSH key name"
   type        = string
-  default = "mykey-h"
+  default = "semin-tf"
 }
 
 #
 variable "codeconnection_arn" {
   description   = "code connection arn"
   type          = string
-  default       = "arn:aws:codeconnections:ap-northeast-2:387721658341:connection/65722506-54ae-4787-95f2-5bd1bd1fab55"
+  default       = "arn:aws:codeconnections:ap-northeast-2:118500955862:connection/24f9049b-ef42-415c-b976-7d1953263d55"
 }
 
 variable "s3_cicd" {
   type = string
-  default = "cicd-20250523"
+  default = "cicd-98bfce82-85b4-5404-09bd-2e44c49cdc72"
 }

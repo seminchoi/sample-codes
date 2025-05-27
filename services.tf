@@ -54,49 +54,30 @@ resource "aws_autoscaling_group" "service_asgs" {
   count = length(var.service_names)
 
   name                      = "${var.service_names[count.index]}-asg"
-  max_size                  = 2
-  min_size                  = 1
+  max_size                  = 4
+  min_size                  = 2
   health_check_grace_period = 30
   health_check_type         = "ELB"
-  desired_capacity          = 1
+  desired_capacity          = 2
   force_delete              = true
   vpc_zone_identifier       = [for subnet in aws_subnet.private_subnets: subnet.id]
   target_group_arns         = [aws_lb_target_group.internal_lb_target_groups[count.index].arn]
 
   instance_maintenance_policy {
-    min_healthy_percentage = 80
+    min_healthy_percentage = 90
     max_healthy_percentage = 120
+  }
+
+  launch_template {
+    id      = aws_launch_template.server_lt.id
+    version = "$Latest"
+
   }
 
   tag {
     key                 = "Name"
     value               = var.service_names[count.index]
     propagate_at_launch = true
-  }
-
-  mixed_instances_policy {
-    launch_template {
-      launch_template_specification {
-        launch_template_id = aws_launch_template.server_lt.id
-        version            = "$Latest"
-      }
-
-      # 여기에 overrides를 넣어서 다양한 인스턴스 타입 사용
-      overrides = [
-        {
-          instance_type = "t3.medium"
-        },
-        {
-          instance_type = "m5.large"
-        }
-      ]
-    }
-
-    instances_distribution {
-      on_demand_percentage_above_base_capacity = 50
-      spot_allocation_strategy                 = "lowest-price"
-      spot_instance_pools                      = 2
-    }
   }
 }
 
@@ -113,7 +94,7 @@ data "aws_ami" "server_ami" {
 resource "aws_launch_template" "server_lt" {
   name_prefix   = "app-lt-"
   image_id      = data.aws_ami.server_ami.image_id
-  instance_type = "t3.small"
+  instance_type = "m5.large"
 
   iam_instance_profile {
     name = aws_iam_instance_profile.codedeploy_profile.name
@@ -124,6 +105,10 @@ resource "aws_launch_template" "server_lt" {
   network_interfaces {
     associate_public_ip_address = false
     security_groups             = [aws_security_group.web_sg.id]
+  }
+
+  monitoring {
+    enabled = true
   }
 }
 
@@ -169,9 +154,9 @@ data "aws_iam_policy_document" "s3_artifact_access" {
 
 resource "aws_instance" "bastion" {
   ami                         = "ami-05a7f3469a7653972"
-  instance_type               = "t3.micro"
+  instance_type               = "t3.small"
   subnet_id                   = aws_subnet.public_subnets[0].id
-  key_name                    = "mykey-h"
+  key_name                    = var.key_name
   vpc_security_group_ids      = [aws_security_group.bastion_sg.id]
   associate_public_ip_address = true
 
@@ -184,3 +169,63 @@ resource "aws_instance" "bastion" {
           apt-get update
           EOF
 }
+
+#-----------------
+resource "aws_cloudwatch_metric_alarm" "high_cpu" {
+  count = length(var.service_names)
+  alarm_name          = "${aws_autoscaling_group.service_asgs[count.index].name}-high-cpu-alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 70
+
+  alarm_actions = [
+    aws_autoscaling_policy.scale_out[count.index].arn
+  ]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.service_asgs[count.index].name
+  }
+}
+
+resource "aws_autoscaling_policy" "scale_out" {
+  count = length(aws_autoscaling_group.service_asgs)
+  name                   = "${aws_autoscaling_group.service_asgs[count.index].name}-scale_out_policy"
+  scaling_adjustment      = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 60
+  autoscaling_group_name = aws_autoscaling_group.service_asgs[count.index].name
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_cpu" {
+  count = length(var.service_names)
+  alarm_name          = "${aws_autoscaling_group.service_asgs[count.index].name}-low-cpu-alarm"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 30
+
+  alarm_actions = [
+    aws_autoscaling_policy.scale_in[count.index].arn
+  ]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.service_asgs[count.index].name
+  }
+}
+
+resource "aws_autoscaling_policy" "scale_in" {
+  count = length(aws_autoscaling_group.service_asgs)
+  name                   = "${aws_autoscaling_group.service_asgs[count.index].name}-scale_in_policy"
+  scaling_adjustment      = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.service_asgs[count.index].name
+}
+
